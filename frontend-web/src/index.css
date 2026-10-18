@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* Tema do front web: fundo branco, Inter, mesma paleta do app de celular */
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 600;
+
+  --color-fundo: #ffffff;
+  --color-painel: #f4f6fa;
+  --color-texto: #1b1f2e;
+  --color-sub: #5e6680;
+  --color-menu: #4a5270;
+  --color-linha: #e3e7f0;
+  --color-borda: #c5cbda;
+
+  --color-ouro: #f5b83d;
+  --color-ouro-sombra: #b9801a;
+  --color-ouro-texto: #a6670a;
+  --color-ouro-claro: #fff4dc;
+  --color-xp: #7b93ff;
+  --color-xp-texto: #4258d0;
+  --color-xp-claro: #eef1ff;
+  --color-diamante: #1aa7c7;
+  --color-diamante-texto: #0e86a3;
+  --color-chama: #e0661a;
+  --color-chama-claro: #fff1e6;
+  --color-certo: #3dd68c;
+  --color-certo-sombra: #23935c;
+  --color-certo-texto: #138a52;
+  --color-certo-fundo: #e3f8ec;
+  --color-erro: #ff6b6b;
+  --color-erro-sombra: #b83a3a;
+  --color-erro-texto: #d13b3b;
+  --color-erro-fundo: #ffecec;
+  --color-erro-borda: #f3c2c2;
+  --color-liga: #f1ecff;
+  --color-liga-borda: #d4c8f2;
+  --color-liga-texto: #5b4b8a;
+}
+
+body {
+  margin: 0;
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.titulo {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Botão "3D" estilo jogo: a sombra some quando pressionado */
+.btn-jogo {
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+.btn-jogo:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: none !important;
+}
+
+kbd {
+  font-family: var(--font-sans);
+}

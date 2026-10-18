@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; Importar questões
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" style="max-width: 760px">
+  <p>
+    <strong>Planilha Excel:</strong> preencha a planilha modelo (uma linha por questão) e envie aqui.
+    <a href="{% url 'admin:questoes_questao_modelo' %}" class="button" style="margin-left: 6px">Baixar planilha modelo</a>
+  </p>
+  <p>
+    <strong>PDF:</strong> envie a prova impressa pelo Qconcursos (opção <strong>Imprimir</strong>,
+    com o bloco <strong>Respostas</strong> no final).
+  </p>
+  <p>
+    Por padrão as questões entram como <strong>rascunho</strong> para você conferir.
+    Marque <em>Publicar automaticamente</em> para que as questões sem avisos já entrem no jogo
+    (recomendado para planilhas que você mesmo preencheu).
+  </p>
+
+  {% if not ocr_disponivel %}
+    <!-- só afeta PDFs sem texto -->
+    <p style="padding: 10px 12px; background: #fff4e5; border-left: 4px solid #f5a623;">
+      <strong>OCR não encontrado.</strong> PDFs com texto selecionável funcionam normalmente.
+      Para PDFs gerados como imagem (ex.: "Microsoft Print to PDF"), instale o Tesseract com o idioma
+      Português (veja o README) ou gere o PDF pelo Chrome com <em>Salvar como PDF</em>.
+    </p>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <fieldset class="module aligned">
+      {% for field in form %}
+        <div class="form-row">
+          <div>
+            {% if field.field.widget.input_type == "checkbox" %}
+              <div class="checkbox-row">{{ field }} <label for="{{ field.id_for_label }}" class="vCheckboxLabel">{{ field.label }}</label></div>
+            {% else %}
+              <label for="{{ field.id_for_label }}" class="required">{{ field.label }}:</label>
+              {{ field }}
+            {% endif %}
+            {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
+            {{ field.errors }}
+          </div>
+        </div>
+      {% endfor %}
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="Importar" class="default" onclick="this.value='Lendo a prova... (com OCR pode levar alguns minutos)';">
+    </div>
+  </form>
+
+  {% if resultado %}
+    <p>Nenhuma questão nova: {{ resultado.duplicadas }} já existiam no banco.</p>
+  {% endif %}
+
+  <h2 style="margin-top: 24px">Depois de importar</h2>
+  <ol>
+    <li>Filtre por <em>Status: Rascunho</em> e <em>Avisos da importação: Com avisos</em>.</li>
+    <li>Abra cada questão com aviso, confira com o PDF e corrija o que precisar (matéria, texto, figura).</li>
+    <li>Selecione as questões revisadas e use a ação <strong>Publicar (ativar) as questões selecionadas</strong>.</li>
+  </ol>
+</div>
+{% endblock %}
