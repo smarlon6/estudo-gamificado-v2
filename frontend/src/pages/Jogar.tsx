@@ -219,14 +219,25 @@ export function Jogar() {
       </div>
 
       {!resultado && (
-        <button
-          type="button"
-          onClick={confirmar}
-          disabled={selecionada === null || enviando}
-          className="btn-jogo mt-2 h-14 rounded-2xl bg-ouro font-display text-xl text-[#241800] shadow-[0_5px_0_var(--color-ouro-sombra)] disabled:bg-trilho disabled:text-sub disabled:shadow-none"
-        >
-          {enviando ? 'Enviando...' : 'Confirmar'}
-        </button>
+        <div className="mt-2 flex gap-2.5">
+          {/* pular: vai para a próxima sem registrar resposta (não conta erro nem meta) */}
+          <button
+            type="button"
+            onClick={carregarQuestao}
+            disabled={enviando}
+            className="flex h-14 shrink-0 items-center rounded-2xl border-2 border-trilho bg-card px-5 text-base font-bold text-[#4a5270] disabled:opacity-50"
+          >
+            Pular
+          </button>
+          <button
+            type="button"
+            onClick={confirmar}
+            disabled={selecionada === null || enviando}
+            className="btn-jogo h-14 flex-1 rounded-2xl bg-ouro font-display text-xl text-[#241800] shadow-[0_5px_0_var(--color-ouro-sombra)] disabled:bg-trilho disabled:text-sub disabled:shadow-none"
+          >
+            {enviando ? 'Enviando...' : 'Confirmar'}
+          </button>
+        </div>
       )}
 
       {/* Painel de feedback */}
