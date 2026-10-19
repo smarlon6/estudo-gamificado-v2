@@ -11,3 +11,18 @@ frontend/dist/
 # Node (front web)
 frontend-web/node_modules/
 frontend-web/dist/
+
+# Variáveis de ambiente e logs
+.env
+*.log
+
+# Editores / sistema
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Provas e planilhas de questões (material de terceiros e com dados pessoais: ficam só no seu PC)
+*.pdf
+*.xlsx
+*.xlsm

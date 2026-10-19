@@ -89,6 +89,11 @@ export function useLeitura() {
   const vel = useRef(velocidade)
   const voz = useRef<SpeechSynthesisVoice | null>(null)
   const falaAtual = useRef<SpeechSynthesisUtterance | null>(null) // evita o Chrome descartar a fala antes do fim
+  // o que está sendo lido agora (para retomar do mesmo ponto quando a velocidade muda)
+  const chaveAtual = useRef<string | null>(null)
+  const trechoAtual = useRef('')
+  const posicao = useRef(0)
+  const restante = useRef<string[]>([])
 
   useEffect(() => {
     if (!suportado) return
@@ -104,32 +109,45 @@ export function useLeitura() {
     }
   }, [suportado])
 
+  const encerrar = useCallback(() => {
+    chaveAtual.current = null
+    restante.current = []
+    setLendo(null)
+  }, [])
+
   const parar = useCallback(() => {
     sessao.current++
     if (suportado) window.speechSynthesis.cancel()
-    setLendo(null)
-  }, [suportado])
+    encerrar()
+  }, [suportado, encerrar])
 
-  const ler = useCallback(
-    (chave: string, texto: string) => {
+  /** Fala a lista de trechos em sequência; uma nova chamada cancela a anterior. */
+  const iniciar = useCallback(
+    (chave: string, partes: string[]) => {
       if (!suportado) return
       const id = ++sessao.current
       window.speechSynthesis.cancel()
-      const partes = dividir(texto)
+      restante.current = partes
+      chaveAtual.current = chave
       const proxima = () => {
         if (id !== sessao.current) return
-        const trecho = partes.shift()
+        const trecho = restante.current.shift()
         if (!trecho) {
-          setLendo(null)
+          encerrar()
           return
         }
+        trechoAtual.current = trecho
+        posicao.current = 0
         const u = new SpeechSynthesisUtterance(trecho)
         u.lang = voz.current?.lang ?? 'pt-BR'
         if (voz.current) u.voice = voz.current
         u.rate = vel.current
+        u.onboundary = (e) => {
+          if (id === sessao.current && e.name !== 'sentence') posicao.current = e.charIndex
+        }
         u.onend = proxima
         u.onerror = () => {
-          if (id === sessao.current) setLendo(null)
+          if (id === sessao.current) encerrar()
         }
         falaAtual.current = u
         window.speechSynthesis.resume()
@@ -138,8 +156,10 @@ export function useLeitura() {
       setLendo(chave)
       window.setTimeout(proxima, 60) // o Chrome às vezes ignora um speak() logo depois do cancel()
     },
-    [suportado],
+    [suportado, encerrar],
   )
+
+  const ler = useCallback((chave: string, texto: string) => iniciar(chave, dividir(texto)), [iniciar])
 
   const alternar = useCallback(
     (chave: string, texto: string) => {
@@ -149,7 +169,7 @@ export function useLeitura() {
     [lendo, ler, parar],
   )
 
-  /** 1x → 1,25x → 1,5x → 0,85x; vale a partir do próximo trecho. */
+  /** 1x → 1,25x → 1,5x → 0,85x; se estiver lendo, aplica na hora e continua da palavra atual. */
   const trocarVelocidade = useCallback(() => {
     const nova = VELOCIDADES[(VELOCIDADES.indexOf(vel.current) + 1) % VELOCIDADES.length]
     vel.current = nova
@@ -159,7 +179,11 @@ export function useLeitura() {
     } catch {
       /* navegador sem armazenamento: só não lembra a velocidade */
     }
-  }, [])
+    if (chaveAtual.current && trechoAtual.current) {
+      const daqui = trechoAtual.current.slice(posicao.current).trim()
+      iniciar(chaveAtual.current, [daqui, ...restante.current].filter(Boolean))
+    }
+  }, [iniciar])
 
   return { suportado, lendo, velocidade, alternar, parar, trocarVelocidade }
 }
