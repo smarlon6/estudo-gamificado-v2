@@ -178,11 +178,21 @@ export function Batalha() {
   const vistas = useRef<number[]>([])
   const inicio = useRef(Date.now())
   const timers = useRef<number[]>([])
+  const areaRolavel = useRef<HTMLDivElement>(null)
+  const feedback = useRef<HTMLDivElement>(null)
   const leitura = useLeitura()
   const pararLeitura = leitura.parar
 
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
   useEffect(() => pararLeitura(), [questao?.id, pararLeitura])
+
+  // questão nova começa do topo; depois de responder, desce até o resultado
+  useEffect(() => {
+    areaRolavel.current?.scrollTo({ top: 0 })
+  }, [questao?.id])
+  useEffect(() => {
+    if (resultado) setTimeout(() => feedback.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150)
+  }, [resultado])
 
   const carregarResumo = useCallback(async () => {
     try {
@@ -407,8 +417,10 @@ export function Batalha() {
   }
   const acabou = b.status !== 'andamento'
 
-  return moldura(
-    <>
+  return (
+    // topo (cabeçalho, barras de vida e cena) fica fixo; só a questão rola
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[radial-gradient(ellipse_at_top,#1d2340_0%,#0b0e1a_60%)] text-[#e8ecff]">
+      <div className="mx-auto flex w-full max-w-md shrink-0 flex-col gap-3 px-3.5 pt-4 pb-3">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -428,7 +440,10 @@ export function Batalha() {
 
       <Hud b={b} />
       <Palco slug={b.inimigo.slug} cena={cena} golpe={golpe} dano={dano} />
+      </div>
 
+      <div ref={areaRolavel} className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-[#1f2642]">
+      <div className="mx-auto flex max-w-md flex-col gap-3 px-3.5 pt-3 pb-8">
       {erro && <p className="m-0 rounded-xl bg-[#2a1216] p-3 text-sm text-[#ff8a8a]">{erro}</p>}
 
       {semQuestao && <p className="m-0 rounded-2xl bg-[#121729] p-4 text-center text-sm text-[#c6cbe6]">{semQuestao}</p>}
@@ -497,7 +512,7 @@ export function Batalha() {
               </button>
             </div>
           ) : (
-            <motion.div initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col gap-2.5">
+            <motion.div ref={feedback} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between gap-2">
                 <span className={`text-lg font-semibold ${resultado.correta ? 'text-[#3dd68c]' : 'text-[#ff6b6b]'}`}>
                   {resultado.correta ? 'Golpe certeiro!' : 'O inimigo te acertou!'}
@@ -538,6 +553,8 @@ export function Batalha() {
       )}
 
       <Progresso b={b} />
-    </>,
+      </div>
+      </div>
+    </div>
   )
 }
