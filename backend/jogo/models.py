@@ -55,6 +55,7 @@ class Resposta(models.Model):
         MISSAO = "missao", "Missão diária"
         REVISAO = "revisao", "Revisão de erros"
         SIMULADO = "simulado", "Simulado"
+        BATALHA = "batalha", "Batalha"
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="respostas")
     questao = models.ForeignKey(Questao, on_delete=models.CASCADE, related_name="respostas")
@@ -208,3 +209,55 @@ class MarcoColetado(models.Model):
 
     class Meta:
         unique_together = [("usuario", "marco")]
+
+
+class Inimigo(models.Model):
+    """Adversário das batalhas. As imagens ficam no front em /batalha/<slug>/."""
+
+    slug = models.SlugField(unique=True)
+    nome = models.CharField(max_length=100)
+    descricao = models.CharField("descrição", max_length=200, blank=True)
+    vida = models.PositiveIntegerField(default=20, help_text="Quantos acertos são necessários para derrotá-lo")
+    recompensa_ouro = models.PositiveIntegerField(default=40)
+    recompensa_diamantes = models.PositiveIntegerField(default=1)
+    ordem = models.PositiveIntegerField(default=0)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["ordem", "nome"]
+
+    def __str__(self):
+        return self.nome
+
+
+class Batalha(models.Model):
+    """Uma batalha: cada acerto tira 1 de vida do inimigo, cada erro tira 1 da sua."""
+
+    class Status(models.TextChoices):
+        ANDAMENTO = "andamento", "Em andamento"
+        VITORIA = "vitoria", "Vitória"
+        DERROTA = "derrota", "Derrota"
+        DESISTENCIA = "desistencia", "Desistência"
+
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="batalhas")
+    inimigo = models.ForeignKey(Inimigo, on_delete=models.PROTECT, related_name="batalhas")
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.ANDAMENTO)
+    vida_inimigo_max = models.PositiveIntegerField()
+    vida_inimigo = models.PositiveIntegerField()
+    vida_jogador_max = models.PositiveIntegerField()
+    vida_jogador = models.PositiveIntegerField()
+    acertos = models.PositiveIntegerField(default=0)
+    erros = models.PositiveIntegerField(default=0)
+    sequencia = models.PositiveIntegerField(default=0, help_text="Acertos seguidos agora")
+    melhor_sequencia = models.PositiveIntegerField(default=0)
+    ouro_ganho = models.PositiveIntegerField(default=0)
+    diamantes_ganhos = models.PositiveIntegerField(default=0)
+    trofeus_ganhos = models.PositiveIntegerField(default=0)
+    iniciada_em = models.DateTimeField(auto_now_add=True)
+    finalizada_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-iniciada_em"]
+
+    def __str__(self):
+        return f"{self.usuario} x {self.inimigo} ({self.get_status_display()})"

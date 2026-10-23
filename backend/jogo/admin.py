@@ -61,3 +61,18 @@ class MarcoTrilhaAdmin(admin.ModelAdmin):
 admin.site.register(NivelMateria)
 admin.site.register(ConquistaUsuario)
 admin.site.register(Anotacao)
+
+
+from .models import Batalha, Inimigo  # noqa: E402
+
+
+@admin.register(Inimigo)
+class InimigoAdmin(admin.ModelAdmin):
+    list_display = ("nome", "slug", "vida", "recompensa_ouro", "recompensa_diamantes", "ordem", "ativo")
+    list_editable = ("vida", "ordem", "ativo")
+
+
+@admin.register(Batalha)
+class BatalhaAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "inimigo", "status", "acertos", "erros", "vida_inimigo", "vida_jogador", "iniciada_em")
+    list_filter = ("status", "inimigo")

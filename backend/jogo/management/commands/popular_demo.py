@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from jogo.models import Conquista, MarcoTrilha
+from jogo.models import Conquista, Inimigo, MarcoTrilha
 from jogo.services import obter_perfil
 from questoes.models import Alternativa, Assunto, Banca, Materia, Questao
 
@@ -150,6 +150,10 @@ class Command(BaseCommand):
             Conquista.objects.update_or_create(codigo=codigo, defaults=dict(
                 nome=nome, descricao=desc, icone=icone, criterio=criterio,
                 valor_alvo=alvo, recompensa_ouro=ouro, recompensa_diamantes=diam))
+
+        Inimigo.objects.update_or_create(slug="orc", defaults=dict(
+            nome="Orc Devastador", descricao="Brutamontes das montanhas de fogo. Só cai com 20 acertos.",
+            vida=20, recompensa_ouro=40, recompensa_diamantes=1, ordem=1, ativo=True))
 
         for trofeus, titulo, ouro, diam in MARCOS:
             MarcoTrilha.objects.update_or_create(trofeus=trofeus, defaults=dict(

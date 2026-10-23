@@ -298,3 +298,64 @@ class HistoricoTest(BaseJogo):
         self.assertEqual(r["semanas"][-1]["percentual"], 50)
         self.assertEqual(len(r["conquistas"]), 8)
         self.assertTrue(any(c["obtida"] for c in r["conquistas"]))
+
+
+class BatalhaTest(BaseJogo):
+    def setUp(self):
+        super().setUp()
+        from . import batalha as bt
+        self.bt = bt
+
+    def lutar(self, certa=True, n=0):
+        q = self.questao(n % 8)
+        alt = q.alternativas.get(correta=True) if certa else q.alternativas.filter(correta=False).first()
+        return self.bt.responder(self.user, q, alt, 20)
+
+    def test_orc_criado_e_inicio(self):
+        b = self.bt.iniciar(self.user)
+        self.assertEqual(b.inimigo.slug, "orc")
+        self.assertEqual((b.vida_inimigo, b.vida_jogador), (20, s.settings.JOGO["BATALHA"]["vidas_jogador"]))
+        self.assertEqual(self.bt.iniciar(self.user).id, b.id)  # não cria duas
+
+    def test_acerto_tira_vida_do_inimigo_erro_tira_a_sua(self):
+        self.bt.iniciar(self.user)
+        r = self.lutar(True)
+        self.assertEqual(r["evento"], "ataque")
+        self.assertEqual(r["batalha"]["vida_inimigo"], 19)
+        self.assertEqual(r["batalha"]["vida_inimigo_pct"], 95)
+        r = self.lutar(False, 1)
+        self.assertEqual(r["evento"], "dano")
+        self.assertEqual(r["batalha"]["vida_jogador"], 4)
+        self.assertEqual(r["batalha"]["sequencia"], 0)
+        self.assertEqual(r["resultado"]["xp_ganho"], 0)  # o fluxo normal continua valendo
+
+    def test_vitoria_com_20_acertos_da_recompensa(self):
+        self.bt.iniciar(self.user)
+        for i in range(19):
+            self.assertEqual(self.lutar(True, i)["evento"], "ataque")
+        r = self.lutar(True, 19)
+        self.assertEqual(r["evento"], "vitoria")
+        self.assertEqual(r["batalha"]["recompensa"]["ouro"], 40)
+        perfil = Perfil.objects.get(usuario=self.user)
+        self.assertGreaterEqual(perfil.ouro, 40)
+        self.assertIsNone(self.bt.batalha_atual(self.user))
+
+    def test_derrota_com_5_erros(self):
+        self.bt.iniciar(self.user)
+        for i in range(4):
+            self.lutar(False, i)
+        r = self.lutar(False, 4)
+        self.assertEqual(r["evento"], "derrota")
+        self.assertEqual(r["batalha"]["recompensa"]["ouro"], 0)
+
+    def test_api_completa(self):
+        self.assertIsNone(self.api.get("/api/batalha/").json()["atual"])
+        b = self.api.post("/api/batalha/iniciar/", {"inimigo": "orc"}, format="json").json()
+        q = self.questao()
+        r = self.api.post("/api/batalha/responder/", {"questao_id": q.id, "alternativa_id": q.alternativas.get(correta=True).id,
+                                                      "tempo_segundos": 15}, format="json").json()
+        self.assertEqual(r["batalha"]["id"], b["id"])
+        self.assertEqual(r["batalha"]["acertos"], 1)
+        self.assertEqual(self.api.post("/api/batalha/desistir/").json()["batalha"]["status"], "desistencia")
+        r = self.api.post("/api/batalha/responder/", {"questao_id": q.id, "alternativa_id": q.alternativas.first().id}, format="json")
+        self.assertEqual(r.status_code, 400)

@@ -124,4 +124,10 @@ JOGO = {
         "aprendida_apos_dias": 60,      # próximo intervalo passaria de 60 dias: sai da revisão
         "missao_revisao_a_cada": 4,     # na missão diária, 1 a cada 4 questões é revisão
     },
+    # Batalha: cada acerto tira 1 de vida do inimigo (vida definida em cada inimigo, padrão 20);
+    # cada erro tira 1 da sua. Zerou a vida do inimigo: vitória. Zerou a sua: derrota.
+    "BATALHA": {
+        "vidas_jogador": 5,
+        "trofeus_vitoria": 10,
+    },
 }

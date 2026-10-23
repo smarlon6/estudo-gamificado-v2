@@ -21,4 +21,9 @@ urlpatterns = [
     path("trilha/<int:marco_id>/coletar/", views.coletar_marco),
     path("estatisticas/", views.estatisticas),
     path("historico/", views.historico),
+
+    path("batalha/", views.batalha),
+    path("batalha/iniciar/", views.batalha_iniciar),
+    path("batalha/responder/", views.batalha_responder),
+    path("batalha/desistir/", views.batalha_desistir),
 ]

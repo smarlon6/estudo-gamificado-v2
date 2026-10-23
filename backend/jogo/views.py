@@ -208,3 +208,39 @@ def historico(request):
     """Dados extras para o front web: calendário, gráfico semanal, tendências e conquistas."""
     return R(s.historico(request.user))
 
+
+
+# ---------------------------------------------------------------------------
+# Batalha
+# ---------------------------------------------------------------------------
+from . import batalha as bt  # noqa: E402
+
+
+@api_view(["GET"])
+def batalha(request):
+    return R(bt.resumo(request.user))
+
+
+@api_view(["POST"])
+def batalha_iniciar(request):
+    try:
+        return R(bt.estado(bt.iniciar(request.user, request.data.get("inimigo"))))
+    except s.RegraDoJogoError as exc:
+        return _erro(exc)
+
+
+@api_view(["POST"])
+def batalha_desistir(request):
+    b = bt.desistir(request.user)
+    return R({"batalha": bt.estado(b) if b else None})
+
+
+@api_view(["POST"])
+def batalha_responder(request):
+    questao = get_object_or_404(Questao, pk=request.data.get("questao_id"))
+    alternativa = get_object_or_404(Alternativa, pk=request.data.get("alternativa_id"))
+    try:
+        tempo = max(0, int(request.data.get("tempo_segundos", 0)))
+        return R(bt.responder(request.user, questao, alternativa, tempo))
+    except (s.RegraDoJogoError, ValueError) as exc:
+        return _erro(exc)

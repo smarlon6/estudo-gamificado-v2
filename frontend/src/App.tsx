@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { api } from './api'
 import { Layout } from './components/Layout'
 import { Carregando } from './components/ui'
+import { Batalha } from './pages/Batalha'
 import { Estatisticas } from './pages/Estatisticas'
 import { Inicio } from './pages/Inicio'
 import { Jogar } from './pages/Jogar'
@@ -27,6 +28,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* batalha ocupa a tela toda, sem o menu de baixo */}
+        <Route path="batalha" element={<Batalha />} />
         <Route element={<Layout />}>
           <Route index element={<Inicio />} />
           <Route path="jogar" element={<Jogar />} />

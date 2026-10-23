@@ -136,3 +136,44 @@ export interface Estatisticas {
   recordes: { ofensiva: number; combo: number }
   conquistas: { codigo: string; nome: string; icone: string; obtida_em: string }[]
 }
+
+export interface EstadoBatalha {
+  id: number
+  status: 'andamento' | 'vitoria' | 'derrota' | 'desistencia'
+  inimigo: { slug: string; nome: string; descricao: string }
+  vida_inimigo: number
+  vida_inimigo_max: number
+  vida_inimigo_pct: number
+  vida_jogador: number
+  vida_jogador_max: number
+  vida_jogador_pct: number
+  acertos: number
+  erros: number
+  respondidas: number
+  sequencia: number
+  melhor_sequencia: number
+  recompensa: { ouro: number; diamantes: number; trofeus: number }
+  iniciada_em: string
+}
+
+export interface ResumoBatalha {
+  atual: EstadoBatalha | null
+  inimigos: {
+    slug: string
+    nome: string
+    descricao: string
+    vida: number
+    recompensa_ouro: number
+    recompensa_diamantes: number
+    vitorias: number
+  }[]
+  vitorias: number
+  derrotas: number
+  vidas_jogador: number
+}
+
+export interface RespostaBatalha {
+  resultado: ResultadoResposta
+  batalha: EstadoBatalha
+  evento: 'ataque' | 'dano' | 'vitoria' | 'derrota'
+}

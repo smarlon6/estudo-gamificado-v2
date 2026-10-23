@@ -67,6 +67,16 @@ cd backend
 python manage.py test jogo
 ```
 
+## Batalha (app do celular)
+
+Na tela inicial, card **Batalha** › **Lutar**. Cada acerto mostra seu ataque e tira vida do inimigo; cada erro
+mostra o inimigo te acertando. Zerou a vida do inimigo: vitória e recompensa. Zerou a sua: derrota.
+
+- Vida do inimigo, prêmio e novos inimigos: Admin › Jogo › **Inimigos**.
+- Suas vidas e troféus da vitória: `settings.JOGO["BATALHA"]`.
+- Imagens de cada inimigo em `frontend/public/batalha/<slug>/`: `encarando`, `ataque`, `dano`, `vitoria`,
+  `derrota` (1080 × 400) e `retrato-heroi`, `retrato-inimigo` (160 × 160), em `.webp`.
+
 ## Importar questões por planilha Excel
 
 1. Baixe o modelo em Admin › Questões › **Importar questões** › **Baixar planilha modelo**
@@ -165,6 +175,8 @@ frontend/src/
 | Questão teimosa | 3+ erros → intervalo máximo de 7 dias |
 | Questão aprendida | próximo intervalo passaria de 60 dias → sai da revisão |
 | Missão diária | 1 a cada 4 questões é uma revisão vencida (a mais atrasada primeiro) |
+| Batalha | cada acerto tira 1 de vida do inimigo (20 = 20 acertos para vencer); cada erro tira 1 das suas 5 vidas |
+| Vitória na batalha | ouro e diamantes do inimigo (orc: +40 ouro, +1 diamante) e +10 troféus |
 | Anotação própria | +5 ouro na primeira vez |
 | Nível geral | subir do nível n para n+1 custa 200 × (n+1) XP |
 | Nível da matéria | subir do nível n para n+1 custa 50 × (n+1) XP |
@@ -186,6 +198,10 @@ frontend/src/
 | GET | `/api/trilha/` | Liga, marcos e comparativo semanal |
 | POST | `/api/trilha/{id}/coletar/` | Coleta um marco da trilha |
 | GET | `/api/estatisticas/` | Desempenho por matéria, pontos fracos, conquistas |
+| GET | `/api/batalha/` | Batalha em andamento, inimigos, vitórias e derrotas |
+| POST | `/api/batalha/iniciar/` | `{inimigo}` começa (ou retoma) a batalha |
+| POST | `/api/batalha/responder/` | `{questao_id, alternativa_id, tempo_segundos}` → resultado + estado da batalha + evento (ataque, dano, vitoria, derrota) |
+| POST | `/api/batalha/desistir/` | Encerra a batalha sem recompensa |
 | GET | `/api/historico/` | Atividade diária (182 dias), acerto semanal (12 semanas), tendência por matéria, tempo médio, catálogo de conquistas |
 
 ## Próximos passos

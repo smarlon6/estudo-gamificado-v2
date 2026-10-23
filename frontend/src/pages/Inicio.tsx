@@ -130,6 +130,22 @@ export function Inicio() {
         Jogar missão diária
       </Link>
 
+      {/* Batalha */}
+      <Link
+        to="/batalha"
+        className="relative flex h-24 items-end overflow-hidden rounded-2xl border border-[#3a2c1c] bg-[#0b0e1a] shadow-[0_4px_14px_rgba(20,10,40,.25)]"
+      >
+        <img src="/batalha/orc/encarando.webp" alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
+        <div className="relative flex w-full items-center justify-between px-4 pb-3">
+          <div className="flex flex-col">
+            <span className="font-display text-xl text-white">Batalha</span>
+            <span className="text-xs text-[#e3d7ff]">Acerte 20 questões e derrote o orc</span>
+          </div>
+          <span className="rounded-xl bg-[#7c3aed] px-3.5 py-2 text-sm font-extrabold text-white shadow-[0_3px_0_#4c1d95]">Lutar</span>
+        </div>
+      </Link>
+
       {painel.revisoes_pendentes > 0 && (
         <Link
           to="/jogar?modo=revisao"
